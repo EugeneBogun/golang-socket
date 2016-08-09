@@ -5,6 +5,64 @@
     <title>Web sockets</title>
 </head>
 <body>
-<h1>Test page</h1>
+<style>
+.wrapper_item{
+    width: 300px; 
+    height: 300px;
+    border: 1px solid #999;
+    float: left;
+    overflow-y: scroll;
+}
+</style>
+<div class="wrapper">
+    <div class="wrapper_item message-list" style="">
+        <div class="message-list_item"></div>
+    </div>
+    <div class="wrapper_item user-list" style="width: 300px; min-height: 300px;border: 1px solid #999">
+        <div class="message-list_item"></div>
+    </div>
+</div>
+<div style="clear: both">
+    <textarea style="width: 300px;padding: 0;margin: 0;border: 1px solid #999;" id="new-message" placeholder="Message"></textarea>
+</div>
+<div>
+    <input type="text" name="" id="uid" placeholder="Uid">
+</div>
+<button id="send-message">Submit</button>
+<script>
+    var ws = new WebSocket("ws://localhost:3000/ws");
+    var messageList = document.getElementsByClassName('message-list');
+    var messageBlock = document.getElementById('new-message');
+    var sendButton = document.getElementById('send-message');
+    var uid = document.getElementById('uid');
+
+    function appendHtml(element, node) {
+        for(var i=0; i<element.length;i++) {
+            element[i].appendChild(node);
+        }
+    }
+
+    function addMessage(name, message) {
+        var node = document.createElement('div');
+        var nameNode = document.createTextNode(name+"->");
+        var messageNode = document.createTextNode(message);
+        node.appendChild(nameNode);
+        node.appendChild(messageNode);
+        appendHtml(messageList, node)
+    }
+
+    sendButton.addEventListener('click', function () {
+        ws.send(JSON.stringify({
+            data: messageBlock.value,
+            receiver_id: uid.value
+        }));
+        addMessage("You", messageBlock.value);
+    });
+
+    ws.addEventListener("message", function (e) {
+        var message = e.data;
+        addMessage("To you", message);
+    })
+</script>
 </body>
 </html>
